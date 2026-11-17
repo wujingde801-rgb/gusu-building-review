@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+dist/
+user-config.json
+.env
+.DS_Store
+gusu-review-knowledge/
