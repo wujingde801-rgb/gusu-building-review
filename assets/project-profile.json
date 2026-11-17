@@ -1,0 +1,20 @@
+{
+  "name": "项目名称",
+  "region": "江苏省苏州市姑苏区",
+  "stage": null,
+  "protection_identity": "unknown",
+  "identity_sources": [],
+  "heritage_work": null,
+  "district_update": null,
+  "existing_use": null,
+  "proposed_use": null,
+  "intervention_scope": [],
+  "review_as_of": null,
+  "project_applicable_date": null,
+  "approved_conditions": [],
+  "unknowns": [
+    "保护身份",
+    "设计阶段",
+    "改造范围"
+  ]
+}

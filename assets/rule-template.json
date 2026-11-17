@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "rule_id": "LOCAL-001",
+  "status": "draft",
+  "title": "待核实检查项",
+  "applicability": {
+    "region": [],
+    "project_type": [],
+    "stage": [],
+    "scope": [],
+    "exceptions": []
+  },
+  "basis": {
+    "record_id": null,
+    "revision": null,
+    "sha256": null,
+    "clause": null,
+    "excerpt": null,
+    "force": null
+  },
+  "obligations": [
+    {
+      "id": "01",
+      "question": "一个对象的一项要求",
+      "required_facts": [],
+      "comparison_method": "待核实",
+      "threshold": null,
+      "unit": null
+    }
+  ],
+  "activation_note": "核实正式依据及适用性后，提案并确认方可改为 active；不得启用此示例"
+}
