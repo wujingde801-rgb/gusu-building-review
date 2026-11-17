@@ -1,0 +1,10 @@
+{
+  "status": "pending",
+  "location": {"raw_address": null, "aliases": [], "drawing_pages": [], "parcel_id": null, "building_ids": [], "coordinate_system": null, "precision_note": null},
+  "designations": [],
+  "zones": [],
+  "actions": [],
+  "procedures": [],
+  "search_log": [],
+  "unresolved": ["逐栋保护身份、各类保护边界及属地报批事项尚未核查"]
+}
