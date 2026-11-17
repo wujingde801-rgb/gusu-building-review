@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 from urllib.parse import urlsplit, quote
 import kb
+import location_context
 
 ASSETS=Path(__file__).resolve().parents[1]/'assets'
 CHECK_RESULTS={'pending','conforming','violation','not_applicable','insufficient','contradiction','optimization'}
@@ -83,7 +84,7 @@ def start(pdf,folder,profile,mode,specialty=None,kroot=None):
            'source':{'path':str(pdf),'sha256':hashfile(pdf),'pages':len(reader.pages)},'profile':profile,
            'route':modules,'rules_snapshot':rule_snapshot,'inventory':inventory,'facts':[],'evidence':[],'checks':checks,
            'knowledge_layers':{k:{'status':'unavailable','sources':[],'use':''} for k in 'ABCD'},
-           'verification_log':[],'human_review':{'status':'pending','note':''}}
+           'location_review':read(ASSETS/'location-context.json'),'verification_log':[],'human_review':{'status':'pending','note':''}}
     write(folder/'review.json',state)
     return {'workspace':str(folder),'pages':len(inventory),'atomic_checks':len(checks),'route':[m['id'] for m in modules]}
 
@@ -91,6 +92,7 @@ def validate(state,kroot=None):
     errors=[]
     def fail(msg): errors.append(msg)
     if state.get('schema_version') != 1: return ['不支持的schema']
+    errors.extend(location_context.validate(state.get('location_review'),state.get('date')))
     source=state.get('source',{})
     if not Path(source.get('path','')).is_file() or hashfile(source['path'])!=source.get('sha256'): fail('项目PDF缺失或发生变化')
     pages=source.get('pages',0)
@@ -239,7 +241,7 @@ def render(state,kroot=None):
            '模式：'+state['mode']+'；设计阶段：'+str(state['profile'].get('stage')),
            '源PDF SHA-256：`'+state['source']['sha256']+'`','',
            '本报告供人工复核，不代替法定审查、专业鉴定或主管部门审批。',
-           '覆盖状态：'+('部分审查' if unseen or counts['pending'] or counts['insufficient'] else '已记录范围内检查完成，仍待人工复核'),
+           '覆盖状态：'+('部分审查' if unseen or counts['pending'] or counts['insufficient'] or state.get('location_review',{}).get('status')!='reviewed' else '已记录范围内检查完成，仍待人工复核'),
            '未完成视觉核验页：'+str(unseen),'检查统计：明确不符合 '+str(counts['violation'])+'；图文矛盾 '+str(counts['contradiction'])+'；建议优化 '+str(counts['optimization'])+'；资料/依据不足 '+str(counts['insufficient'])+'；尚未审查 '+str(counts['pending'])+'；已核对 '+str(counts['conforming'])+'；不适用 '+str(counts['not_applicable']),'',
            '## 项目身份、范围与适用性','',kb.dump(state['profile']),'',
            '## 审查意见与待核实事项','']
@@ -268,6 +270,7 @@ def render(state,kroot=None):
                   '事实引用：'+', '.join(c.get('fact_ids',[])),
                   '依据名称与版本：'+source_display, '依据与条文：'+basis_display,
                   '人工复核：'+('待复核' if c.get('human',{}).get('status','pending')=='pending' else c['human']['status'])+' '+c.get('human',{}).get('note',''),'']
+    lines += location_context.render(state.get('location_review'),source_link)
     lines += ['## 覆盖矩阵','', '| 检查ID | 检查事项 | 状态 |','|---|---|---|']
     for c in state['checks']: lines += ['| '+c['id']+' | '+c['question'].replace('|','/')+' | '+labels[c['result']]+' |']
     lines += ['', '## 项目事实索引','', kb.dump(state['facts']), '', '## 图文证据索引','']
