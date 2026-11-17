@@ -15,6 +15,7 @@ description: 审查苏州市姑苏区建筑改造、片区更新、历史建筑�
 
 - “审查这个方案”：默认 detailed。quick 为快速初筛；specialty 为用户指定专项及其身份、一致性核验。用户无需记命令，由你操作脚本。
 - 涉及标准检索时读取 [线上标准接入](references/ccsn-access.md)：按项目从工程建设标准化信息网搜索并读取全文，默认报告仅保留链接和引用信息，不要求标准先入本地库或长期保存全文；浏览器超时可用公开读取脚本，取得PDF后须实际查看所用正文页。
+- 文件提供位置或需核查报批时，执行 [区位保护与报批核查](references/location-approvals.md)：逐栋查询本体身份和保护范围，拆解改造行为，再核对当前办事事项及部门；未命中名录不等于普通建筑。
 - 首先读 [审查流程与分流](references/workflow.md)。对新增或更新规范、项目经验读 [知识库管理](references/knowledge.md)。
 - 使用当前可用 Python 3.10+；PDF索引需 `pypdf`，裁图需 `Pillow` 与 `pdftoppm`。先检查 WorkBuddy 可用的 Python 解释器和依赖，参见 references/workbuddy-setup.md；缺少时可原生读PDF并手工登记证据，不得伪称脚本已运行。
 - 知识库路径优先采用用户提供路径，其次 `GUSU_REVIEW_KB`，再次读取安装目录可选 `user-config.json` 的 `knowledge_base`；没有路径时在用户工作目录下创建独立 `gusu-review-knowledge`，不得存进技能目录。项目过程与知识库原文分开。
@@ -25,7 +26,7 @@ description: 审查苏州市姑苏区建筑改造、片区更新、历史建筑�
 
 1. 保持源文件不变。用 `assets/project-profile.json` 建项目身份表；明确现状/拟用功能、保护身份及来源、改造范围、片区边界、设计阶段、项目适用日期与本次核验日期。关键信息缺失时先继续不依赖该信息的工作，需判断处保持未知。
 2. `python scripts/review.py init --pdf <PDF> --workspace <新项目目录> --profile <身份JSON> --mode detailed`。专项另加 `--mode specialty --specialty fire` 等模块ID。确认表内 date 为用户当地本次审查日期；不得以机器日期替代用户上下文。
-3. 先读目录、说明、现状与改造前后总平立剖、指标表、保护要素及专项页，逐页登记 `inventory`。原生PDF可读时直接看；否则逐页渲染/放大。文本索引只用于定位。未看页标 unseen，看不清标 unreadable，不能默认为已审。
+3. 初始化后填写location_review，按 [区位保护与报批核查](references/location-approvals.md) 查项目位置、逐栋身份与叠加边界，形成“身份/范围—实际改造行为—报批事项—受理/决定部门—条款/指南链接”清单。缺位置或图则时保留待核实，继续其他可审事项。随后先读目录、说明、现状与改造前后总平立剖、指标表、保护要素及专项页，逐页登记 `inventory`。原生PDF可读时直接看；否则逐页渲染/放大。文本索引只用于定位。未看页标 unseen，看不清标 unreadable，不能默认为已审。
 4. 根据 [模块清单](assets/modules.json) 和阶段要求执行原子检查，每项只判一个对象的一项要求。需要多对象时在观察中逐一列出；需要多个义务时拆为独立规则义务，不用一条泛化“符合”关闭一组问题。quick 先检查安全、保护与明显冲突，未检查项仍保留；detailed 检查全部路由项；specialty 保留范围外未审说明。
 5. 按 [证据与适用性](references/evidence-applicability.md) 记录 `evidence → facts → checks → basis`。使用 `scripts/pdf_evidence.py` 裁图时先看原页，再登记观察；脚本不设置已阅读状态。归一化坐标从已按PDF旋转显示的页面左上角起，PDF物理页码从1起，另存印刷页码/图号。
 6. 对可能形成合规结论的条款，优先按 [线上标准接入](references/ccsn-access.md) 查用户指定网站，本地地方正式文件与经验补充，并联网核查官方实施/废止公告及全文。线上依据按 [证据与适用性](references/evidence-applicability.md) 的source_type=online记录，不要求本地B记录、原文哈希或正式入库。正文必须实际阅读，报告保留链接、名称编号、版本、条号/页码和核验日期；需临时下载时只作阅读工作文件，默认不长期归档。先读 [官方核验来源](references/official-sources.md)。找不到全文、适用性未知、冲突未解、尺寸模糊时保持 insufficient。网页不可用时记录失败与日期，不能用搜索摘要、转载、记忆补造条款。
