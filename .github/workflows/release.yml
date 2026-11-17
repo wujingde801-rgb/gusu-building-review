@@ -1,0 +1,33 @@
+name: Check and publish skill
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: skill-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - run: python tools/package.py
+      - name: Publish checked package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="v$(tr -d '\r\n' < VERSION)"
+          if [[ "$GITHUB_REF_TYPE" == tag && "$GITHUB_REF_NAME" != "$tag" ]]; then
+            echo "Tag does not match VERSION" >&2
+            exit 1
+          fi
+          gh release create "$tag" dist/gusu-building-review-workbuddy.zip dist/SHA256SUMS --target "$GITHUB_SHA" --title "$tag · WorkBuddy 分享版" --notes-file CHANGELOG.md
